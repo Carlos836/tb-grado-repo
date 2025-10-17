@@ -7,12 +7,10 @@ from .base_model import BaseCreditScoringModel
 from .credit_scoring_models import CreditScoringModels
 from .model_evaluator import CreditModelEvaluator
 from .model_factory import ModelFactory
-from .domain_generalization import DomainGeneralization
 
 __all__ = [
     "BaseCreditScoringModel",
     "CreditScoringModels",
     "CreditModelEvaluator", 
-    "ModelFactory",
-    "DomainGeneralization"
+    "ModelFactory"
 ]
