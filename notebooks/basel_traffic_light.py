@@ -59,16 +59,30 @@ def create_basel_traffic_light_table(y_true, y_pred_proba, model_name, dataset_n
             # Basel binomial test (two-sided)
             p_value = basel_binomial_test(count_1, total_records, predicted_pd, alpha=0.05)
             
-            # Basel Traffic Light colors
-            if p_value > 0.05:
-                color = 'Verde'
-                interpretation = 'Modelo preciso'
-            elif p_value > 0.01:
-                color = 'Amarillo'
-                interpretation = 'Precision cuestionable'
+            # Basel Traffic Light colors (5 colors system)
+            # Determine if overestimation or underestimation
+            if actual_rate > predicted_pd:
+                # Actual rate higher than predicted (underestimation)
+                if p_value > 0.05:
+                    color = 'Verde'
+                    interpretation = 'Preciso'
+                elif p_value > 0.01:
+                    color = 'Amarillo'
+                    interpretation = 'Subestimacion leve'
+                else:
+                    color = 'Rojo'
+                    interpretation = 'Subestimacion fuerte'
             else:
-                color = 'Rojo'
-                interpretation = 'Modelo impreciso'
+                # Actual rate lower than predicted (overestimation)
+                if p_value > 0.05:
+                    color = 'Verde'
+                    interpretation = 'Preciso'
+                elif p_value > 0.01:
+                    color = 'Azul Claro'
+                    interpretation = 'Sobrestimacion leve'
+                else:
+                    color = 'Azul Marino'
+                    interpretation = 'Sobrestimacion fuerte'
             
             # Confidence interval for actual rate (95%)
             ci_lower, ci_upper = stats.binom.interval(0.95, total_records, actual_rate)
@@ -106,10 +120,12 @@ def create_basel_traffic_light_table(y_true, y_pred_proba, model_name, dataset_n
     total_0 = result_df['Cantidad_0'].sum()
     overall_rate = total_1 / total_records if total_records > 0 else 0
     
-    # Count colors
+    # Count colors (5 color system)
     green_count = len(result_df[result_df['Color'] == 'Verde'])
     yellow_count = len(result_df[result_df['Color'] == 'Amarillo'])
     red_count = len(result_df[result_df['Color'] == 'Rojo'])
+    light_blue_count = len(result_df[result_df['Color'] == 'Azul Claro'])
+    dark_blue_count = len(result_df[result_df['Color'] == 'Azul Marino'])
     
     summary_row = pd.DataFrame({
         'Decil': ['TOTAL'],
@@ -123,7 +139,7 @@ def create_basel_traffic_light_table(y_true, y_pred_proba, model_name, dataset_n
         'PD_Predicha': ['-'],
         'Diferencia': ['-'],
         'P_Value': ['-'],
-        'Color': [f'V:{green_count} A:{yellow_count} R:{red_count}'],
+        'Color': [f'V:{green_count} A:{yellow_count} R:{red_count} AC:{light_blue_count} AM:{dark_blue_count}'],
         'Interpretacion': ['Resumen'],
         'CI_Lower': ['-'],
         'CI_Upper': ['-']
@@ -183,18 +199,22 @@ def display_basel_traffic_light_tables(results):
                            'Diferencia', 'P_Value', 'Color']
             print(table[display_cols].to_string(index=False))
             
-            # Summary statistics
+            # Summary statistics (5 color system)
             if dataset_name != 'summary':
                 green_count = len(table[table['Color'] == 'Verde'])
                 yellow_count = len(table[table['Color'] == 'Amarillo'])
                 red_count = len(table[table['Color'] == 'Rojo'])
-                total_ranges = green_count + yellow_count + red_count
+                light_blue_count = len(table[table['Color'] == 'Azul Claro'])
+                dark_blue_count = len(table[table['Color'] == 'Azul Marino'])
+                total_ranges = green_count + yellow_count + red_count + light_blue_count + dark_blue_count
                 
                 if total_ranges > 0:
                     print(f"\nResumen {dataset_name.upper()}:")
                     print(f"  Verde: {green_count}/{total_ranges} ({green_count/total_ranges*100:.1f}%)")
                     print(f"  Amarillo: {yellow_count}/{total_ranges} ({yellow_count/total_ranges*100:.1f}%)")
                     print(f"  Rojo: {red_count}/{total_ranges} ({red_count/total_ranges*100:.1f}%)")
+                    print(f"  Azul Claro: {light_blue_count}/{total_ranges} ({light_blue_count/total_ranges*100:.1f}%)")
+                    print(f"  Azul Marino: {dark_blue_count}/{total_ranges} ({dark_blue_count/total_ranges*100:.1f}%)")
                     
                     # Basel interpretation
                     if green_count >= 7:
