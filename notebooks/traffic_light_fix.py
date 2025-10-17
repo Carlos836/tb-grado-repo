@@ -4,6 +4,25 @@
 import pandas as pd
 import numpy as np
 from scipy import stats
+from scipy.stats import binom
+
+def binomial_test(k, n, p, alternative='two-sided'):
+    """
+    Custom binomial test implementation
+    """
+    if alternative == 'two-sided':
+        # Two-sided test: p-value is 2 * min(P(X <= k), P(X >= k))
+        p_lower = binom.cdf(k, n, p)
+        p_upper = 1 - binom.cdf(k-1, n, p)
+        p_value = 2 * min(p_lower, p_upper)
+    elif alternative == 'greater':
+        p_value = 1 - binom.cdf(k-1, n, p)
+    elif alternative == 'less':
+        p_value = binom.cdf(k, n, p)
+    else:
+        raise ValueError("alternative must be 'two-sided', 'greater', or 'less'")
+    
+    return p_value
 
 def calculate_traffic_light_statistical(y_true, y_pred_proba, n_groups=10, alpha=0.05):
     """
@@ -27,9 +46,9 @@ def calculate_traffic_light_statistical(y_true, y_pred_proba, n_groups=10, alpha
             predicted_rate = decile_data['predicted'].mean()
             n_obs = len(decile_data)
             
-            # Binomial test
+            # Binomial test using custom implementation
             n_success = int(actual_rate * n_obs)
-            p_value = stats.binom_test(n_success, n_obs, predicted_rate, alternative='two-sided')
+            p_value = binomial_test(n_success, n_obs, predicted_rate, alternative='two-sided')
             
             # Determine color based on p-value
             if p_value > alpha:
