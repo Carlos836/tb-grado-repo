@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Traffic Light con Pruebas Estadísticas (Método Correcto)
 """
 Código para calcular Traffic Light usando pruebas estadísticas
