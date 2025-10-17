@@ -1,0 +1,191 @@
+# Configuración específica para experimentos
+# Este archivo se puede modificar para diferentes experimentos
+
+# Configuración del experimento actual
+experiment:
+  name: "baseline_experiment"
+  description: "Experimento baseline con datos reales vs sintéticos"
+  version: "1.0"
+  date: "2025-01-17"
+  
+  # Configuración de datasets
+  datasets:
+    # Dataset principal (segmento D)
+    primary:
+      name: "segment_d_credit_data"
+      source: "internal"  # o "uci" para datasets de UCI
+      size: 5000  # Tamaño aproximado del dataset
+      
+    # Dataset de referencia (segmento A)
+    reference:
+      name: "segment_a_credit_data"
+      source: "internal"
+      size: 200000
+    
+    # Datasets de UCI para validación
+    uci_datasets:
+      - "german_credit"
+      - "australian_credit"
+      - "credit_approval"
+
+# Configuración de generadores para este experimento
+synthetic_generators_experiment:
+  # Generadores a probar
+  active_generators:
+    sdv:
+      - "GaussianCopula"
+      - "CTGAN"
+      - "TVAE"
+    
+    synthcity:
+      - "CTGAN"
+      - "TVAE"
+      - "TabularGAN"
+    
+    ydata:
+      - "CTGAN"
+      - "WGAN"
+  
+  # Configuración específica por generador
+  generator_configs:
+    CTGAN:
+      epochs: 100
+      batch_size: 500
+      generator_lr: 2e-4
+      discriminator_lr: 2e-4
+      generator_decay: 1e-6
+      discriminator_decay: 1e-6
+      discriminator_steps: 1
+      log_frequency: true
+      verbose: true
+      pac: 10
+      cuda: false
+    
+    TVAE:
+      epochs: 100
+      batch_size: 500
+      lr: 2e-3
+      loss_factor: 2
+      cuda: false
+    
+    GaussianCopula:
+      default_distribution: "gaussian"
+      enforce_min_max_values: true
+      enforce_rounding: true
+
+# Configuración de modelos ML para este experimento
+ml_models_experiment:
+  # Modelos a probar
+  active_models:
+    - "XGBoost"
+    - "CatBoost"
+    - "LightGBM"
+    - "HistGradientBoosting"
+  
+  # Configuración de hiperparámetros
+  hyperparameter_search:
+    enabled: true
+    method: "optuna"  # o "grid_search"
+    n_trials: 50
+    timeout: 3600  # segundos
+    
+  # Configuración de validación cruzada
+  cross_validation:
+    cv_folds: 5
+    stratify: true
+    shuffle: true
+    random_state: 42
+
+# Configuración de métricas para este experimento
+metrics_experiment:
+  # Métricas prioritarias
+  primary_metrics:
+    - "auc_roc"
+    - "psi"
+    - "traffic_light"
+  
+  # Métricas secundarias
+  secondary_metrics:
+    - "precision"
+    - "recall"
+    - "f1_score"
+    - "gini_coefficient"
+  
+  # Umbrales de aceptación
+  thresholds:
+    auc_roc:
+      minimum: 0.65
+      target: 0.75
+    psi:
+      maximum: 0.10
+      warning: 0.05
+    traffic_light:
+      minimum_green: 0.8  # 80% de grupos en verde
+
+# Configuración de RL para este experimento
+rl_experiment:
+  # Configuración de agentes
+  agents:
+    synthetic_agent:
+      enabled: true
+      algorithm: "PPO"
+      total_timesteps: 50000
+      eval_freq: 5000
+      
+    model_agent:
+      enabled: true
+      algorithm: "PPO"
+      total_timesteps: 50000
+      eval_freq: 5000
+  
+  # Configuración de recompensas
+  reward_config:
+    synthetic_quality_weight: 0.4
+    model_performance_weight: 0.4
+    stability_weight: 0.2
+    
+    # Recompensas específicas
+    auc_improvement_reward: 10.0
+    psi_improvement_reward: 5.0
+    stability_reward: 3.0
+    penalty_for_degradation: -5.0
+
+# Configuración de reportes
+reporting:
+  # Configuración de reportes automáticos
+  auto_reports:
+    enabled: true
+    frequency: "experiment_end"  # o "daily", "weekly"
+    
+  # Configuración de visualizaciones
+  visualizations:
+    - "performance_comparison"
+    - "synthetic_quality_analysis"
+    - "model_stability_analysis"
+    - "rl_learning_curves"
+    - "feature_importance"
+    - "confusion_matrices"
+  
+  # Configuración de exportación
+  export:
+    formats: ["html", "pdf", "json"]
+    include_raw_data: false
+    include_model_artifacts: true
+
+# Configuración de recursos para este experimento
+resources_experiment:
+  # Configuración de paralelización
+  parallel:
+    n_jobs: 4
+    backend: "loky"  # o "threading", "multiprocessing"
+  
+  # Configuración de memoria
+  memory:
+    max_memory_usage: "4GB"
+    cleanup_frequency: 100  # cada 100 iteraciones
+  
+  # Configuración de tiempo
+  timeouts:
+    generator_training: 3600  # 1 hora
+    model_training: 1800     # 30 minutos
+    rl_training: 7200        # 2 horas

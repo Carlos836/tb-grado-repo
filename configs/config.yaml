@@ -1,0 +1,192 @@
+# Configuración principal del proyecto de grado
+# Framework de RL para optimización de datos sintéticos y modelos ML
+
+# Configuración de datos
+data:
+  raw_path: "data/raw"
+  processed_path: "data/processed"
+  synthetic_path: "data/synthetic"
+  
+  # Configuración de segmentos
+  segments:
+    target_segment: "D"  # Segmento objetivo (baja transaccionalidad)
+    reference_segment: "A"  # Segmento de referencia (alta transaccionalidad)
+  
+  # División de datos
+  train_ratio: 0.6
+  validation_ratio: 0.2
+  test_ratio: 0.2
+  
+  # Muestras de validación para sintetizadores
+  synthetic_validation_ratio: 0.15
+
+# Configuración de generadores sintéticos
+synthetic_generators:
+  # Librerías a usar
+  libraries:
+    - "sdv"
+    - "synthcity"
+    - "ydata"
+  
+  # Generadores GAN
+  gan_models:
+    - "CTGAN"
+    - "TVAE"
+    - "WGAN"
+    - "DCGAN"
+  
+  # Generadores No-GAN
+  traditional_models:
+    - "GaussianCopula"
+    - "SMOTE"
+    - "ADASYN"
+    - "BorderlineSMOTE"
+  
+  # Configuración de generación
+  generation:
+    num_samples: 10000  # Número de muestras sintéticas a generar
+    random_state: 42
+    epochs: 100  # Para modelos GAN
+
+# Configuración de modelos ML
+ml_models:
+  # Modelos de scoring crediticio
+  models:
+    - "XGBoost"
+    - "CatBoost"
+    - "LightGBM"
+    - "HistGradientBoosting"
+    - "RandomForest"
+    - "LogisticRegression"
+  
+  # Configuración de entrenamiento
+  training:
+    cv_folds: 5
+    random_state: 42
+    test_size: 0.2
+    
+  # Hiperparámetros por defecto
+  default_params:
+    XGBoost:
+      n_estimators: 100
+      max_depth: 6
+      learning_rate: 0.1
+      random_state: 42
+    CatBoost:
+      iterations: 100
+      depth: 6
+      learning_rate: 0.1
+      random_seed: 42
+    LightGBM:
+      n_estimators: 100
+      max_depth: 6
+      learning_rate: 0.1
+      random_state: 42
+
+# Configuración de métricas de evaluación
+evaluation:
+  # Métricas de calidad de datos sintéticos
+  synthetic_quality:
+    - "KS_complement"
+    - "chi_squared"
+    - "kl_divergence_inverse"
+    - "cosine_similarity"
+    - "jensen_shannon_entropy"
+  
+  # Métricas de performance de modelos
+  model_performance:
+    - "auc_roc"
+    - "auc_pr"
+    - "precision"
+    - "recall"
+    - "f1_score"
+    - "accuracy"
+  
+  # Métricas específicas de riesgo crediticio
+  credit_metrics:
+    - "psi"
+    - "traffic_light"
+    - "gini_coefficient"
+    - "ks_statistic"
+    - "population_stability"
+
+# Configuración de Reinforcement Learning
+reinforcement_learning:
+  # Agentes
+  agents:
+    synthetic_data_agent:
+      algorithm: "PPO"
+      learning_rate: 0.0003
+      n_steps: 2048
+      batch_size: 64
+      n_epochs: 10
+      gamma: 0.99
+      gae_lambda: 0.95
+      clip_range: 0.2
+      
+    model_selection_agent:
+      algorithm: "PPO"
+      learning_rate: 0.0003
+      n_steps: 2048
+      batch_size: 64
+      n_epochs: 10
+      gamma: 0.99
+      gae_lambda: 0.95
+      clip_range: 0.2
+  
+  # Configuración de entrenamiento
+  training:
+    total_timesteps: 100000
+    eval_freq: 10000
+    save_freq: 50000
+    log_interval: 10
+  
+  # Configuración de recompensas
+  rewards:
+    synthetic_quality_weight: 0.4
+    model_performance_weight: 0.4
+    stability_weight: 0.2
+    
+    # Umbrales de recompensa
+    auc_threshold: 0.65
+    psi_threshold: 0.10
+    ks_threshold: 0.05
+
+# Configuración de experimentos
+experiments:
+  # Configuración de MLflow
+  mlflow:
+    experiment_name: "synthetic_data_credit_scoring"
+    tracking_uri: "file:./mlruns"
+  
+  # Configuración de Wandb (opcional)
+  wandb:
+    project: "synthetic-data-credit-scoring"
+    entity: null  # Configurar con tu usuario de wandb
+  
+  # Configuración de logging
+  logging:
+    level: "INFO"
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    file: "logs/experiment.log"
+
+# Configuración de paths
+paths:
+  models: "models"
+  results: "results"
+  logs: "logs"
+  configs: "configs"
+  notebooks: "notebooks"
+  src: "src"
+
+# Configuración de recursos
+resources:
+  # Configuración de GPU (si está disponible)
+  gpu:
+    use_gpu: false
+    device: "cuda:0"
+  
+  # Configuración de CPU
+  cpu:
+    n_jobs: -1  # Usar todos los cores disponibles
+    max_memory: "8GB"
